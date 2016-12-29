@@ -1,6 +1,7 @@
 package listing
 
 import (
+	"encoding/json"
 	"fmt"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -37,6 +38,25 @@ func getClientWithOAuthContext(ctx context.Context) *http.Client {
 	return &http.Client{Transport: transport}
 }
 
+type AppEngineServices struct {
+	Services []AppEngineService `json:"services"`
+}
+
+type AppEngineService struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+}
+
 func transformAndDisplay(body []byte, w http.ResponseWriter) {
-	fmt.Fprintf(w, "%s", body)
+	var services AppEngineServices
+	log.Println("construction du json")
+	err := json.Unmarshal(body, &services)
+	if err != nil {
+		log.Print("err2", err)
+	}
+	fmt.Fprintf(w, "<ul>")
+	for index := range services.Services {
+		fmt.Fprintf(w, "<li>%s</li>", services.Services[index].Id)
+	}
+	fmt.Fprintf(w, "</ul>")
 }

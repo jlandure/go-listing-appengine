@@ -14,19 +14,43 @@ import (
 )
 
 func init() {
-	http.HandleFunc("/", getServiceListing)
+	http.HandleFunc("/api/services", getServiceListingApi)
+	http.HandleFunc("/", getServiceListingHtml)
 }
 
-func getServiceListing(w http.ResponseWriter, r *http.Request) {
+func getServiceListing(w http.ResponseWriter, r *http.Request) ([]byte, error) {
 	ctx := appengine.NewContext(r)
 	resp, err := getClientWithOAuthContext(ctx).Get("https://appengine.googleapis.com/v1/apps/zen-formations/services")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 	log.Printf("HTTP GET returned status %v", resp.Status)
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
+	return body, nil
+}
+
+func getServiceListingApi(w http.ResponseWriter, r *http.Request) {
+	body, err := getServiceListing(w, r)
+	if err != nil {
+		return
+	}
+	var services AppEngineServices
+	log.Println("construction du json")
+	err = json.Unmarshal(body, &services)
+	data, err := json.Marshal(services)
+	if err != nil {
+		log.Print("err mashal", err)
+	}
+	fmt.Fprintf(w, "%s", data)
+}
+
+func getServiceListingHtml(w http.ResponseWriter, r *http.Request) {
+	body, err := getServiceListing(w, r)
+	if err != nil {
+		return
+	}
 	transformAndDisplay(body, w)
 }
 

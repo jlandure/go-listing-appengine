@@ -80,10 +80,10 @@ type AppEngineService struct {
 func formatName(name string) string {
 	// Function replacing words (assuming lower case input)
 	replace := func(word string) string {
-		// switch word {
-		// case "-", "zen":
-		// 	return ""
-		// }
+		switch word {
+		case "zen-" /*, "formation-"*/ :
+			return ""
+		}
 
 		if word[len(word)-1] == '-' {
 			word = word[:len(word)-1] + " "

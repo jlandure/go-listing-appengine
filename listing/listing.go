@@ -22,6 +22,8 @@ func init() {
 }
 
 func getServiceListing(w http.ResponseWriter, r *http.Request) ([]byte, error) {
+	// add CORS headers
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	ctx := appengine.NewContext(r)
 	resp, err := getClientWithOAuthContext(ctx).Get("https://appengine.googleapis.com/v1/apps/zen-formations/services")
 	if err != nil {

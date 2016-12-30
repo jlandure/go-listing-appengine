@@ -8,9 +8,12 @@ import (
 	"golang.org/x/oauth2/google"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/urlfetch"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"regexp"
+	"strings"
 )
 
 func init() {
@@ -39,6 +42,7 @@ func getServiceListingApi(w http.ResponseWriter, r *http.Request) {
 	var services AppEngineServices
 	log.Println("construction du json")
 	err = json.Unmarshal(body, &services)
+	services = transform(services)
 	data, err := json.Marshal(services)
 	if err != nil {
 		log.Print("err mashal", err)
@@ -67,8 +71,41 @@ type AppEngineServices struct {
 }
 
 type AppEngineService struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
+	Id    string `json:"id"`
+	Name  string `json:"name"`
+	Url   string `json:"url"`
+	Title string `json:"title"`
+}
+
+func formatName(name string) string {
+	// Function replacing words (assuming lower case input)
+	replace := func(word string) string {
+		// switch word {
+		// case "-", "zen":
+		// 	return ""
+		// }
+
+		if word[len(word)-1] == '-' {
+			word = word[:len(word)-1] + " "
+		}
+		return strings.Title(word)
+	}
+
+	r := regexp.MustCompile(`(\w+-|\w+)`)
+	formattedName := r.ReplaceAllStringFunc(name, replace)
+
+	log.Println(formattedName)
+	return formattedName
+}
+
+func transform(services AppEngineServices) AppEngineServices {
+	for index := range services.Services {
+		services.Services[index].Title = formatName(services.Services[index].Id)
+		log.Printf("%s", services.Services[index].Title)
+		services.Services[index].Url = fmt.Sprintf("https://%s-dot-zen-formations.appspot.com/", services.Services[index].Id)
+		// 	fmt.Fprintf(w, "<li>%s</li>", services.Services[index].Id)
+	}
+	return services
 }
 
 func transformAndDisplay(body []byte, w http.ResponseWriter) {
@@ -78,9 +115,12 @@ func transformAndDisplay(body []byte, w http.ResponseWriter) {
 	if err != nil {
 		log.Print("err2", err)
 	}
-	fmt.Fprintf(w, "<ul>")
-	for index := range services.Services {
-		fmt.Fprintf(w, "<li>%s</li>", services.Services[index].Id)
+	services = transform(services)
+	tmpl := template.Must(template.ParseFiles("template/listing.gohtml"))
+	tc := make(map[string]interface{})
+	tc["Services"] = services.Services
+
+	if err := tmpl.Execute(w, tc); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	fmt.Fprintf(w, "</ul>")
 }

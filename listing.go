@@ -1,4 +1,4 @@
-package listing
+package main
 
 import (
 	"context"
@@ -16,7 +16,7 @@ import (
 	"strings"
 )
 
-func init() {
+func main() {
 	http.HandleFunc("/api/services", getServiceListingApi)
 	http.HandleFunc("/", getServiceListingHtml)
 }

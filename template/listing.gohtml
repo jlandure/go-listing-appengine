@@ -54,8 +54,8 @@
     <div class="center">
       <ul>
       	{{ range $index, $service := .Services }}
-      	{{ if ne $service.Id "default"}}
-        <li><h2><a href="{{ $service.Url }}" target="_NEW">
+      	{{ if ne $service.ID "default"}}
+        <li><h2><a href="{{ $service.URL }}" target="_NEW">
         	{{ $service.Title }}
         </a></h2></li>
         {{ end }}

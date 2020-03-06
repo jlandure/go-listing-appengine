@@ -1,22 +1,31 @@
-Project listing the services (old-named "module") in your current appengine project
+Project listing the services in your current appengine project
 
 # Go
 
-Use the `go@1.9` appengine version.
+Use the `go 1.13` version.
+
+# Install gcloud command
+
+Use the `gcloud components install app-engine-go` command
 
 # Install dependencies
 
 ```
-go get golang.org/x/oauth2
-go get google.golang.org/appengine
-go get cloud.google.com/go
+go mod vendor
 ```
+
+# Documentation
+
+If needed, please read these links:
+
+- [Admin API](https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps.services/list)
+- [Go Doc for google.golang.org/api/appengine/v1](https://pkg.go.dev/google.golang.org/api/appengine/v1?tab=doc)
 
 # Test
 
-`goapp serve .`
+`go run listing.go`
 
 # Deploy
 
 Not working with the following command:
-`gcloud app deploy --application XX ./app.yaml --version go-listing`
+`gcloud app deploy --project XX ./app.yaml --version go-listing`
